@@ -1,13 +1,12 @@
 package main
 
-// go:wasm-module zkvm_golang
-// export extend
-func extend(x, y uint32, tag string) string {
+//go:wasm-module zkvm_golang
+//export extend
+func extend(x, y uint32) {
 	sum := uint64(x + y)
-	prefix := "Honig"
-	println(sum, "# of ", prefix, " and ", tag, " as well!")
-	return prefix + tag
+	prefix := "Festivus"
+	println(sum, "days of", prefix)
 }
 
-// required for wasi target
+// required for wasi & wasm target
 func main() {}

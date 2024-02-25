@@ -7,3 +7,15 @@ Strip debug symbols, -no-debug: 17k
 Don't print panic msgs, -panic=trap: no savings
 Disable goroutines, -scheduler=none: 8.2k
 Disable GC, -gc=leaking: 4.1k
+
+Parameters outside of the base WASM types (i32 & i64, etc.) must be passed via
+shared & manually managed memory.
+
+https://github.com/tetratelabs/wazero/tree/main/examples/allocation/tinygo
+
+https://github.com/tetratelabs/tinymem/tree/main
+
+TinyGo runtime supports & exports malloc and free, so host can make bufs and
+pass to guest funcs to use. Guest can allocate objects and return a reference
+to the underlying memory (copied from Golang GC to malloc'd mem) to the host.
+So host manages all malloc and free.
