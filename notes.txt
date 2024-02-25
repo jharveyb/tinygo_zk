@@ -1,0 +1,9 @@
+Binary size reduction tips:
+
+https://tinygo.org/docs/guides/optimizing-binaries/
+
+Example build, -target=wasi:  87k
+Strip debug symbols, -no-debug: 17k
+Don't print panic msgs, -panic=trap: no savings
+Disable goroutines, -scheduler=none: 8.2k
+Disable GC, -gc=leaking: 4.1k
