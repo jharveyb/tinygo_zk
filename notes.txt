@@ -1,3 +1,11 @@
+Deps:
+
+tinygo
+wasmi
+wasmer
+wabt
+binaryen
+
 Binary size reduction tips:
 
 https://tinygo.org/docs/guides/optimizing-binaries/
@@ -7,15 +15,39 @@ Strip debug symbols, -no-debug: 17k
 Don't print panic msgs, -panic=trap: no savings
 Disable goroutines, -scheduler=none: 8.2k
 Disable GC, -gc=leaking: 4.1k
+target wasm-unknown: 243 bytes
+
+Host-guest IPC:
 
 Parameters outside of the base WASM types (i32 & i64, etc.) must be passed via
 shared & manually managed memory.
 
 https://github.com/tetratelabs/wazero/tree/main/examples/allocation/tinygo
 
-https://github.com/tetratelabs/tinymem/tree/main
+https://github.com/tetratelabs/tinymem
 
 TinyGo runtime supports & exports malloc and free, so host can make bufs and
 pass to guest funcs to use. Guest can allocate objects and return a reference
 to the underlying memory (copied from Golang GC to malloc'd mem) to the host.
 So host manages all malloc and free.
+
+wasm-unknown target requires no allocations, compile fails from memset or memcpy
+it could work if using host-provided buffers, just need to size them correctly 
+
+Optimize after compile:
+
+wasm-opt -o opt_tinygo_main.wasm -O4 tinygo_main.wasm
+
+or inspect with wasmer CLI
+
+As of go 1.20, better options for handling raw memory as strings (immutable):
+
+https://pkg.go.dev/unsafe#String
+
+https://go.dev/src/strings/builder.go
+
+We can create an extremely small build with DCE in Binaryen / wasm-opt:
+
+https://github.com/WebAssembly/binaryen/wiki/Pruning-unneeded-code-in-wasm-files-with-wasm-metadce
+
+And then remove the fd_write import with --remove-imports to get to pure WASM

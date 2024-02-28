@@ -1,10 +1,19 @@
 #!/bin/bash
 
 FLAGS="-no-debug -panic=trap -scheduler=none -gc=leaking"
-# TARGET="-target=wasm"
-TARGET="-target=wasi"
-OUTFILE="-o tinygo_main.wasm"
+
+# TARGET="-target=wasm-unknown"
+TARGET="-target=wasm"
+
+OUTFILE="tinygo_main.wasm"
+DECOMP="optdefault.wat"
+
 INFILE="main.go"
 
+# DEVCOMP="$HOME/tinygo/build/tinygo"
+COMP="tinygo"
+
 # shellcheck disable=SC2086
-tinygo build $OUTFILE $FLAGS $TARGET $INFILE
+$COMP build -o $OUTFILE $FLAGS $TARGET $INFILE
+
+wasm2wat $OUTFILE -o $DECOMP
