@@ -4,14 +4,11 @@ import (
 	"unsafe"
 )
 
-var livePointers = map[uintptr][]byte{}
-
 //export _malloc
 func malloc(size uint32) uintptr {
 	buf := make([]byte, size)
 	ptr := &buf[0]
 	unsafePtr := uintptr(unsafe.Pointer(ptr))
-	livePointers[unsafePtr] = buf
 	return unsafePtr
 }
 

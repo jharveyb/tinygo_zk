@@ -10,7 +10,6 @@ DECOMP="optdefault.wat"
 
 INFILE="main.go"
 
-# DEVCOMP="$HOME/tinygo/build/tinygo"
 COMP="tinygo"
 
 # shellcheck disable=SC2086
