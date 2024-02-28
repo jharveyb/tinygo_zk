@@ -103,7 +103,7 @@
         local.get 1
         local.get 2
         i32.store offset=12
-        i32.const 65700
+        i32.const 65728
         local.get 1
         i32.const 12
         i32.add
@@ -121,14 +121,14 @@
     local.get 2)
   (func $runtime.alloc (type 1) (param i32) (result i32)
     (local i32 i32 i32)
-    i32.const 65920
-    i32.const 65920
+    i32.const 65944
+    i32.const 65944
     i64.load
     i64.const 1
     i64.add
     i64.store
-    i32.const 65688
-    i32.const 65688
+    i32.const 65716
+    i32.const 65716
     i32.load
     local.tee 1
     local.get 0
@@ -140,14 +140,14 @@
     i32.add
     local.tee 0
     i32.store
-    i32.const 65912
-    i32.const 65912
+    i32.const 65936
+    i32.const 65936
     i64.load
     local.get 2
     i64.extend_i32_u
     i64.add
     i64.store
-    i32.const 65784
+    i32.const 65808
     i32.load
     local.set 3
     block  ;; label = @1
@@ -161,13 +161,13 @@
         i32.const -1
         i32.ne
         if  ;; label = @3
-          i32.const 65784
+          i32.const 65808
           memory.size
           i32.const 16
           i32.shl
           local.tee 3
           i32.store
-          i32.const 65688
+          i32.const 65716
           i32.load
           local.set 0
           br 1 (;@2;)
@@ -230,7 +230,6 @@
         local.get 1
         local.get 0
         i32.store
-        i32.const 65700
         local.get 1
         call $runtime.hashmapBinaryDelete
       end
@@ -242,131 +241,128 @@
     end
     unreachable)
   (func $runtime.hashmapBinaryGet (type 4) (param i32 i32) (result i32)
-    i32.const 65700
+    i32.const 65728
     local.get 0
     local.get 1
     local.get 0
-    i32.const 65712
+    i32.const 65740
     i32.load
-    i32.const 65704
+    i32.const 65732
     i32.load
     local.get 0
     call $runtime.hash32
     call $runtime.hashmapGet)
-  (func $runtime.hashmapBinaryDelete (type 5) (param i32 i32)
+  (func $runtime.hashmapBinaryDelete (type 3) (param i32)
     (local i32 i32 i32 i32 i32 i32 i32)
+    local.get 0
+    i32.const 65740
+    i32.load
+    i32.const 65732
+    i32.load
+    i32.const 0
+    call $runtime.hash32
+    local.tee 1
+    i32.const 24
+    i32.shr_u
+    local.tee 2
+    i32.const 1
+    local.get 2
+    select
+    local.set 3
+    i32.const 65728
+    local.get 1
+    call $runtime.hashmapBucketAddrForHash
+    local.set 1
     block  ;; label = @1
-      local.get 0
-      i32.eqz
-      br_if 0 (;@1;)
-      local.get 1
-      local.get 0
-      i32.load offset=12
-      local.get 0
-      i32.load offset=4
-      i32.const 0
-      call $runtime.hash32
-      local.tee 2
-      i32.const 24
-      i32.shr_u
-      local.tee 3
-      i32.const 1
-      local.get 3
-      select
-      local.set 4
-      local.get 0
-      local.get 2
-      call $runtime.hashmapBucketAddrForHash
-      local.set 2
       loop  ;; label = @2
-        local.get 2
+        local.get 1
         i32.eqz
         br_if 1 (;@1;)
         i32.const 0
-        local.set 3
+        local.set 2
         block  ;; label = @3
           loop  ;; label = @4
-            local.get 3
+            local.get 2
             i32.const 8
             i32.ne
             if  ;; label = @5
               block  ;; label = @6
+                local.get 1
                 local.get 2
-                local.get 3
                 i32.add
-                local.tee 5
+                local.tee 4
                 i32.load8_u
-                local.get 4
+                local.get 3
                 i32.ne
                 br_if 0 (;@6;)
-                local.get 0
-                i32.load offset=28
-                local.tee 6
+                i32.const 65756
+                i32.load
+                local.tee 5
                 i32.eqz
                 br_if 3 (;@3;)
-                local.get 1
                 local.get 0
-                i32.load offset=12
-                local.tee 7
-                local.get 3
-                i32.mul
+                i32.const 65740
+                i32.load
+                local.tee 6
                 local.get 2
+                i32.mul
+                local.get 1
                 i32.add
                 i32.const 12
                 i32.add
-                local.tee 8
-                local.get 7
-                local.get 0
-                i32.load offset=24
+                local.tee 7
                 local.get 6
+                i32.const 65752
+                i32.load
+                local.get 5
                 call_indirect (type 0)
                 i32.const 1
                 i32.and
                 i32.eqz
                 br_if 0 (;@6;)
-                local.get 5
+                local.get 4
                 i32.const 0
                 i32.store8
-                local.get 8
+                local.get 7
                 i32.const 0
-                local.get 0
-                i32.load offset=12
+                i32.const 65740
+                i32.load
                 memory.fill
-                local.get 0
-                i32.load offset=16
-                local.tee 1
-                local.get 3
+                i32.const 65744
+                i32.load
+                local.tee 0
+                local.get 2
                 i32.mul
-                local.get 0
-                i32.load offset=12
+                i32.const 65740
+                i32.load
                 i32.const 3
                 i32.shl
                 i32.add
-                local.get 2
+                local.get 1
                 i32.add
                 i32.const 12
                 i32.add
                 i32.const 0
-                local.get 1
+                local.get 0
                 memory.fill
-                local.get 0
-                local.get 0
-                i32.load offset=8
+                i32.const 65736
+                i32.const 65736
+                i32.load
                 i32.const 1
                 i32.sub
-                i32.store offset=8
+                i32.store
                 br 5 (;@1;)
               end
-              local.get 3
+              local.get 2
               i32.const 1
               i32.add
-              local.set 3
+              local.set 2
               br 1 (;@4;)
             end
           end
-          local.get 2
+          local.get 1
           i32.load offset=8
-          local.set 2
+          local.set 1
           br 1 (;@2;)
         end
       end
@@ -536,8 +532,8 @@
           i32.shl
           i32.le_u
           br_if 0 (;@3;)
-          i32.const 65684
-          i32.const 65684
+          i32.const 65712
+          i32.const 65712
           i32.load
           local.tee 3
           i32.const 7
@@ -1066,20 +1062,20 @@
     end)
   (func $runtime.putchar (type 3) (param i32)
     (local i32 i32)
-    i32.const 65788
+    i32.const 65812
     i32.load
     local.tee 1
     i32.const 119
     i32.le_u
     if  ;; label = @1
-      i32.const 65788
+      i32.const 65812
       local.get 1
       i32.const 1
       i32.add
       local.tee 2
       i32.store
       local.get 1
-      i32.const 65792
+      i32.const 65816
       i32.add
       local.get 0
       i32.store8
@@ -1095,16 +1091,16 @@
       select
       i32.eqz
       if  ;; label = @2
-        i32.const 65696
+        i32.const 65724
         local.get 2
         i32.store
         i32.const 1
-        i32.const 65692
+        i32.const 65720
         i32.const 1
-        i32.const 65928
+        i32.const 65952
         call $runtime.fd_write
         drop
-        i32.const 65788
+        i32.const 65812
         i32.const 0
         i32.store
       end
@@ -1177,7 +1173,6 @@
               local.get 2
               local.get 0
               i32.store
-              i32.const 65700
               local.get 2
               call $runtime.hashmapBinaryDelete
             end
@@ -1193,7 +1188,7 @@
             local.get 2
             local.get 3
             i32.store offset=12
-            i32.const 65700
+            i32.const 65728
             local.get 2
             i32.const 12
             i32.add
@@ -1216,15 +1211,15 @@
     (local i32)
     memory.size
     local.set 0
-    i32.const 65688
-    i32.const 66352
+    i32.const 65716
+    i32.const 66384
     i32.store
-    i32.const 65784
+    i32.const 65808
     local.get 0
     i32.const 16
     i32.shl
     i32.store
-    i32.const 65784
+    i32.const 65808
     memory.size
     i32.const 16
     i32.shl
@@ -1260,7 +1255,7 @@
           local.get 1
           local.get 2
           i32.store offset=12
-          i32.const 65740
+          i32.const 65768
           local.get 1
           i32.const 12
           i32.add
@@ -1279,25 +1274,6 @@
       call $runtime.lookupPanic
       unreachable
     end)
-  (func $_free.command_export (type 3) (param i32)
-    (local i32)
-    global.get $__stack_pointer
-    i32.const 16
-    i32.sub
-    local.tee 1
-    global.set $__stack_pointer
-    local.get 1
-    local.get 0
-    i32.store offset=12
-    i32.const 65740
-    local.get 1
-    i32.const 12
-    i32.add
-    call $runtime.hashmapBinaryDelete
-    local.get 1
-    i32.const 16
-    i32.add
-    global.set $__stack_pointer)
   (func $extend.command_export (type 6) (param i32 i32) (result i64)
     local.get 0
     local.get 1
@@ -1308,26 +1284,76 @@
     i64.const 2097152
     i64.or)
   (func $ahoy.command_export (type 6) (param i32 i32) (result i64)
-    local.get 0
-    i32.eqz
-    local.get 1
-    i32.const 0
-    i32.ne
-    i32.and
-    local.get 1
-    i32.const 0
-    i32.lt_s
-    i32.or
-    if (result i64)  ;; label = @1
+    (local i32 i32)
+    block (result i64)  ;; label = @1
+      local.get 0
+      i32.eqz
+      local.get 1
+      i32.const 0
+      i32.ne
+      i32.and
+      local.get 1
+      i32.const 0
+      i32.lt_s
+      i32.or
+      i32.eqz
+      if  ;; label = @2
+        block (result i64)  ;; label = @3
+          local.get 1
+          i32.eqz
+          if  ;; label = @4
+            i32.const 65684
+            local.set 2
+            i64.const 27
+            br 1 (;@3;)
+          end
+          local.get 1
+          i32.const 27
+          i32.add
+          local.tee 3
+          call $runtime.alloc
+          local.tee 2
+          i32.const 23
+          i32.add
+          i32.const 65707
+          i32.load align=1
+          i32.store align=1
+          local.get 2
+          i32.const 16
+          i32.add
+          i32.const 65700
+          i64.load align=1
+          i64.store align=1
+          local.get 2
+          i32.const 8
+          i32.add
+          i32.const 65692
+          i64.load align=1
+          i64.store align=1
+          local.get 2
+          i32.const 65684
+          i64.load align=1
+          i64.store align=1
+          local.get 2
+          i32.const 27
+          i32.add
+          local.get 0
+          local.get 1
+          memory.copy
+          local.get 3
+          i64.extend_i32_s
+        end
+        local.get 2
+        i64.extend_i32_u
+        i64.const 32
+        i64.shl
+        i64.or
+        br 1 (;@1;)
+      end
       i32.const 65647
       i32.const 37
       call $runtime.runtimePanicAt
       unreachable
-    else
-      local.get 1
-      i32.const 26
-      i32.add
-      i64.extend_i32_s
     end)
   (table (;0;) 3 3 funcref)
   (memory (;0;) 2)
@@ -1339,10 +1365,9 @@
   (export "realloc" (func $realloc.command_export))
   (export "_start" (func $_start.command_export))
   (export "_malloc" (func $_malloc.command_export))
-  (export "_free" (func $_free.command_export))
   (export "extend" (func $extend.command_export))
   (export "ahoy" (func $ahoy.command_export))
   (elem (;0;) (i32.const 1) func $runtime.memequal $runtime.hash32)
-  (data $.rodata (i32.const 65536) "panic: runtime error: nil pointer dereferenceassignment to entry in nil mapindex out of rangeslice out of rangeunsafe.Slice/String: len out of range")
-  (data $.data (i32.const 65684) "aQ\86A0\03\01\00\00\01\01\00\00\00\00\00\8c\01\01\00\c1\82\01\00\00\00\00\00\04\00\00\00\0c\00\00\00\01\00\00\00\00\00\00\00\01\00\00\00\00\00\00\00\02\00\00\00\a4\02\01\00aQ\86A\00\00\00\00\04\00\00\00\0c")
-  (data $.data.1 (i32.const 65768) "\01\00\00\00\00\00\00\00\02"))
+  (data $.rodata (i32.const 65536) "panic: runtime error: nil pointer dereferenceassignment to entry in nil mapindex out of rangeslice out of rangeunsafe.Slice/String: len out of range21 days of Festivus before ")
+  (data $.data (i32.const 65712) "aQ\86AP\03\01\00\18\01\01\00\00\00\00\00\a4\01\01\00\c1\82\01\00\00\00\00\00\04\00\00\00\0c\00\00\00\01\00\00\00\00\00\00\00\01\00\00\00\00\00\00\00\02\00\00\00\bc\02\01\00aQ\86A\00\00\00\00\04\00\00\00\0c")
+  (data $.data.1 (i32.const 65796) "\01\00\00\00\00\00\00\00\02"))

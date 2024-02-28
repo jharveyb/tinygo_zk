@@ -1,7 +1,7 @@
 [
         {
                 "name": "outside",
-                "reaches": ["export-start", "export-extend", "export-ahoy", "export-memory", "export-malloc", "export-free"],
+                "reaches": ["export-start", "export-extend", "export-ahoy", "export-memory", "export-malloc"],
                 "root": true
         },
         {
@@ -23,9 +23,5 @@
         {
                 "name": "export-malloc",
                 "export": "_malloc"
-        },
-        {
-                "name": "export-free",
-                "export": "_free"
         }
 ]

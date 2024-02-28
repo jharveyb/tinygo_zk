@@ -15,21 +15,10 @@ func malloc(size uint32) uintptr {
 	return unsafePtr
 }
 
-//export _free
-func free(ptr uintptr) {
-	delete(livePointers, ptr)
-}
-
-func strToLeakedPtr(data string) uint64 {
-	// must copy before leaking
-	outStr := data
-	ptr := uintptr(unsafe.Pointer(unsafe.StringData(outStr)))
-	size := uint64(len(outStr))
-	return (uint64(ptr<<32) | size)
-}
-
-func ptrToString(ptr uintptr, size uint32) string {
-	return unsafe.String((*byte)(unsafe.Pointer(ptr)), size)
+func strToPtr(data string) uint64 {
+	ptr := uintptr(unsafe.Pointer(unsafe.StringData(data)))
+	size := uint64(len(data))
+	return (uint64(ptr) << uint64(32)) | size
 }
 
 //export extend
@@ -43,8 +32,8 @@ func extend(x, y int32) int64 {
 //export ahoy
 func ahoy(ptr *byte, size uint32) uint64 {
 	inputStr := unsafe.String(ptr, size)
-	outputString := "21 days of Festivus before" + inputStr
-	return strToLeakedPtr(outputString)
+	outputString := "21 days of Festivus before " + inputStr
+	return strToPtr(outputString)
 }
 
 // required for wasi & wasm target
