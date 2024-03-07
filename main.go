@@ -4,7 +4,7 @@ import (
 	"unsafe"
 )
 
-//export _malloc
+//export malloc
 func malloc(size uint32) uintptr {
 	buf := make([]byte, size)
 	ptr := &buf[0]
@@ -14,16 +14,12 @@ func malloc(size uint32) uintptr {
 
 func strToPtr(data string) uint64 {
 	ptr := uintptr(unsafe.Pointer(unsafe.StringData(data)))
-	size := uint64(len(data))
-	return (uint64(ptr) << uint64(32)) | size
+	return (uint64(ptr) << uint64(32)) | uint64(len(data))
 }
 
 //export extend
 func extend(x, y int32) int64 {
-	sum := int64(x + y)
-	lowerVal := int32(1 << 21)
-	shiftSum := int64(sum<<32) + int64(lowerVal)
-	return shiftSum
+	return int64(x+y)<<32 + int64(1<<21)
 }
 
 //export ahoy

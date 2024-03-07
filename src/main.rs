@@ -1,17 +1,16 @@
 extern crate alloc;
 
 use alloc::str;
-use anyhow::{Error, Ok};
 use wasmi::{Linker, Value};
 
 fn main() {
     // have to load this at build time to go no_std
     let go_wasm_path = "megaopt_go.wasm";
-    let wasm_bytes = std::fs::read(go_wasm_path).expect("");
+    let wasm_bytes = std::fs::read(go_wasm_path).unwrap();
 
     // We have to map wasmi errors as we're using wasmi in no_std mode.
     let engine = wasmi::Engine::default();
-    let module = wasmi::Module::new(&engine, &wasm_bytes[..]).expect("");
+    let module = wasmi::Module::new(&engine, &wasm_bytes[..]).unwrap();
 
     // Exposing host function to WASM module
     /*
@@ -31,31 +30,35 @@ fn main() {
     let mut store = wasmi::Store::new(&engine, ());
     let instance = linker
         .instantiate(&mut store, &module)
-        .expect("")
+        .unwrap()
         .start(&mut store)
-        .expect("");
+        .unwrap();
     let guest_memory = instance
         .get_memory(&store, "memory")
-        .ok_or(Error::msg("failed to get guest memory")).expect("");
+        .ok_or(anyhow::Error::msg("failed to get guest memory"))
+        .unwrap();
 
     println!(
         "Guest memory state: {:?}",
         guest_memory.current_pages(&store)
     );
 
-    const SAMPLE_SIZE: usize = 2 << 9;
-    const GUEST_MEM_OFFSET: usize = 2 << 15;
-    let read_guest_mem = |s: &wasmi::Store<()>| -> anyhow::Result<()> {
+    const SAMPLE_SIZE: usize = 2 << 7;
+    // match zstack-size compile option
+    const GUEST_MEM_OFFSET: usize = 2 << 10;
+    let read_guest_mem = |s: &wasmi::Store<()>| {
         let mut read_buf: [u8; SAMPLE_SIZE] = [0; SAMPLE_SIZE];
         guest_memory
             .read(s, GUEST_MEM_OFFSET, &mut read_buf)
-            .map_err(Error::msg)?;
-        println!("Guest memory Page 2: {:02X?}", read_buf);
-        Ok(())
+            .unwrap();
+        println!("Guest memory: {:02X?}", read_buf);
     };
-    read_guest_mem(&store).expect("");
+    read_guest_mem(&store);
 
     // Register guest funcs
+    let wasm_init= instance
+        .get_typed_func::<(), ()>(&store, "_initialize")
+        .expect("register init guest func");
     let extend = instance
         .get_typed_func::<(i32, i32), u64>(&store, "extend")
         .expect("register extend guest func");
@@ -63,7 +66,7 @@ fn main() {
         .get_typed_func::<(i32, i32), u64>(&store, "ahoy")
         .expect("register ahoy guest func");
     let malloc = instance
-        .get_typed_func::<i32, i32>(&store, "_malloc")
+        .get_typed_func::<i32, i32>(&store, "malloc")
         .expect("register _malloc guest func");
 
     // Ask guest to make a buffer for host to write to; we have to free later
@@ -71,6 +74,7 @@ fn main() {
     let greet_bytes = greet_string.as_bytes();
     let greet_size = greet_bytes.len() as i32;
 
+    wasm_init.call(&mut store, ()).unwrap();
     let greet_ptr = malloc.call(&mut store, greet_size).expect("call malloc");
     let greet_ptr_host = greet_ptr as usize;
 
@@ -80,7 +84,7 @@ fn main() {
     guest_memory
         .write(&mut store, greet_ptr_host, greet_bytes)
         .expect("write str");
-    read_guest_mem(&store).expect("");
+    read_guest_mem(&store);
 
     // quick maths
     let maths = extend.call(&mut store, (1, 2)).expect("call extend");
@@ -91,7 +95,7 @@ fn main() {
     let ahoy_resp = ahoy
         .call(&mut store, (greet_ptr, greet_size))
         .expect("call ahoy");
-    read_guest_mem(&store).expect("");
+    read_guest_mem(&store);
 
     // decode the guest memory location of the func output
     let ahoy_ptr_guest = (ahoy_resp >> 32) as u32;
@@ -106,6 +110,6 @@ fn main() {
     guest_memory
         .read(&store, ahoy_ptr_guest as usize, &mut ahoy_bytes[..])
         .expect("read str");
-    let guest_output = str::from_utf8(&ahoy_bytes).expect("");
+    let guest_output = str::from_utf8(&ahoy_bytes).unwrap();
     println!("Guest output: {:?}", guest_output);
 }

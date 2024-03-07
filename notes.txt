@@ -51,3 +51,21 @@ We can create an extremely small build with DCE in Binaryen / wasm-opt:
 https://github.com/WebAssembly/binaryen/wiki/Pruning-unneeded-code-in-wasm-files-with-wasm-metadce
 
 And then remove the fd_write import with --remove-imports to get to pure WASM
+
+Adding alloc support to the wasm-unknown target (have to build tinygo):
+
+https://github.com/tinygo-org/tinygo/issues/4174
+
+Limiting memory to one page:
+
+https://github.com/tinygo-org/tinygo/issues/2093
+
+Compile to C instead of using wasmi?
+
+https://github.com/WebAssembly/wabt/tree/main/wasm2c
+
+https://github.com/wasm3/embedded-wasm-apps/tree/main
+
+Maybe a ringbuffer on the stack is useful?
+
+https://github.com/smallnest/ringbuffer

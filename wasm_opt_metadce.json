@@ -1,12 +1,12 @@
 [
         {
                 "name": "outside",
-                "reaches": ["export-start", "export-extend", "export-ahoy", "export-memory", "export-malloc"],
+                "reaches": ["export-init", "export-extend", "export-ahoy", "export-memory", "export-malloc"],
                 "root": true
         },
         {
-                "name": "export-start",
-                "export": "_start"
+                "name": "export-init",
+                "export": "_initialize"
         },
         {
                 "name": "export-extend",
@@ -22,6 +22,6 @@
         },
         {
                 "name": "export-malloc",
-                "export": "_malloc"
+                "export": "malloc"
         }
 ]
