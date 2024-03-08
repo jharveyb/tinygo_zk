@@ -1,12 +1,45 @@
-extern crate alloc;
+use wamr_rust_sdk::{
+    function::Function, instance::Instance, module::Module, runtime::Runtime, value::WasmValue,
+};
+use wamr_sys::{wasm_runtime_addr_app_to_native, wasm_runtime_validate_app_addr};
 
-use alloc::str;
-use wasmi::{Linker, Value};
+use core::ffi::c_void;
+use std::mem::ManuallyDrop;
+use wasmi::Linker;
+
+fn guest_to_host_ptr(instance: &Instance, guest_ptr: u32) -> Result<*mut c_void, &'static str> {
+    let instance_ptr = instance.get_inner_instance();
+    let safe_addr = unsafe { wasm_runtime_validate_app_addr(instance_ptr, guest_ptr, 4) };
+    if !safe_addr {
+        return Err("unsafe guest ptr");
+    }
+
+    Ok(unsafe { wasm_runtime_addr_app_to_native(instance_ptr, guest_ptr) })
+}
+
+fn write_to_wamr_mem(instance: &Instance, guest_ptr: u32, host_data: &[u8]) {
+    let host_ptr = guest_to_host_ptr(instance, guest_ptr).unwrap();
+
+    unsafe {
+        std::ptr::copy(host_data.as_ptr(), host_ptr as *mut u8, host_data.len());
+    };
+}
+
+fn read_from_wamr_mem(instance: &Instance, guest_ptr: u32, size: u32) -> ManuallyDrop<&[u8]> {
+    let host_ptr = guest_to_host_ptr(instance, guest_ptr).unwrap();
+
+    // Omit the slice destructor, as WAMR owns the guest memory.
+    std::mem::ManuallyDrop::new(unsafe {
+        std::slice::from_raw_parts(host_ptr as *mut u8, size as usize)
+    })
+}
 
 fn main() {
     // have to load this at build time to go no_std
     let go_wasm_path = "megaopt_go.wasm";
+    let go_wasm_aot_path = "megaopt.aot";
     let wasm_bytes = std::fs::read(go_wasm_path).unwrap();
+    let wasm_aot_bytes = std::fs::read(go_wasm_aot_path).unwrap();
 
     // We have to map wasmi errors as we're using wasmi in no_std mode.
     let engine = wasmi::Engine::default();
@@ -56,7 +89,7 @@ fn main() {
     read_guest_mem(&store);
 
     // Register guest funcs
-    let wasm_init= instance
+    let wasm_init = instance
         .get_typed_func::<(), ()>(&store, "_initialize")
         .expect("register init guest func");
     let extend = instance
@@ -102,7 +135,8 @@ fn main() {
     let ahoy_size_guest = (ahoy_resp & 0x000000000ffffffff) as u32;
     println!(
         "Guest result ptr: 0x{:X}, size: {}",
-        ahoy_ptr_guest - GUEST_MEM_OFFSET as u32, ahoy_size_guest
+        ahoy_ptr_guest - GUEST_MEM_OFFSET as u32,
+        ahoy_size_guest
     );
 
     // read output of guest func from guest memory
@@ -110,6 +144,38 @@ fn main() {
     guest_memory
         .read(&store, ahoy_ptr_guest as usize, &mut ahoy_bytes[..])
         .expect("read str");
-    let guest_output = str::from_utf8(&ahoy_bytes).unwrap();
+    let guest_output = String::from_utf8(ahoy_bytes).unwrap();
     println!("Guest output: {:?}", guest_output);
+
+    let wamr_runtime = Runtime::builder().use_system_allocator().build().unwrap();
+    // let wamr_module = Module::from_buf(wasm_bytes.as_slice()).unwrap();
+    let wamr_module = Module::from_buf(wasm_aot_bytes.as_slice()).unwrap();
+    let wamr_instance = Instance::new_with_args(&wamr_module, 1024 * 2, 1024 * 62).unwrap();
+
+    let wamr_init = Function::find_export_func(&wamr_instance, "_initialize").unwrap();
+    let wamr_malloc = Function::find_export_func(&wamr_instance, "malloc").unwrap();
+    let wamr_extend = Function::find_export_func(&wamr_instance, "extend").unwrap();
+
+    let init_args: Vec<WasmValue> = vec![];
+    wamr_init.call(&wamr_instance, &init_args).unwrap();
+
+    let malloc_args: Vec<WasmValue> = vec![WasmValue::I32(greet_size)];
+    let malloc_return = wamr_malloc
+        .call(&wamr_instance, &malloc_args)
+        .unwrap()
+        .encode()[0];
+
+    println!(
+        "guest heap 0x{:02X}, guest absolute 0x{:02X}, host {:02X?}",
+        malloc_return - GUEST_MEM_OFFSET as u32,
+        malloc_return,
+        guest_to_host_ptr(&wamr_instance, malloc_return).unwrap()
+    );
+
+    write_to_wamr_mem(&wamr_instance, malloc_return, greet_string.as_bytes());
+
+    let guest_data = read_from_wamr_mem(&wamr_instance, malloc_return, greet_string.len() as u32);
+    let data_str = std::str::from_utf8(&guest_data).unwrap();
+
+    println!("{:?}", data_str);
 }

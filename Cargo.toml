@@ -8,3 +8,5 @@ edition = "2021"
 [dependencies]
 anyhow = { version = "1.0.80", default-features = false }
 wasmi = { version = "0.31.2", default-features = false }
+wamr-rust-sdk = { path = "../wamr-rust-sdk" }
+wamr-sys = { path = "../wamr-rust-sdk/crates/wamr-sys" }
